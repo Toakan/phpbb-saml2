@@ -106,6 +106,16 @@ class auth_simplesaml extends \phpbb\auth\provider\base
         $as->logout("/");
     }
 
+    public function validate_session($user_row)
+    {
+        $as = new \SimpleSAML\Auth\Simple('default-sp');
+        if($as->isAuthenticated()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     function get_login_array(array $row)
     {
         if (!isset($row)) {
