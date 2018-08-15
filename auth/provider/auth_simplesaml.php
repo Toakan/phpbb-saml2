@@ -112,6 +112,9 @@ class auth_simplesaml extends \phpbb\auth\provider\base
         if($as->isAuthenticated()) {
             return true;
         } else {
+            global $user;
+            $user->session_kill();
+            $user->session_begin();
             return false;
         }
     }
