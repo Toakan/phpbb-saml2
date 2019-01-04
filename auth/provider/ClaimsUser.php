@@ -35,7 +35,7 @@ class ClaimsUser
 
         $userName = $attributes[$map->userNameType][0];
 
-        if(strlen($userName) > 20)
+        if(strlen($userName) > 255)
         {
             $val = strtolower($userName);
             $crc64 = ( '0x' . hash('crc32', $val) . hash('crc32b', $val) );
