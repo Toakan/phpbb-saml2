@@ -43,7 +43,7 @@ class ClaimsUser
         }
         else
         {
-            $this->userName = strtolower($userName);
+            $this->userName = $userName;
         }
     }
 

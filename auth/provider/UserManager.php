@@ -35,7 +35,7 @@ class UserManager
         }
         $sql = 'SELECT ' . $fields . '
        		FROM ' . USERS_TABLE . "
-       		WHERE username_clean = '" . $db->sql_escape($claimsUser->userName) . "'";
+       		WHERE username = '" . $db->sql_escape($claimsUser->userName) . "'";
         $result = $db->sql_query($sql);
         $row = $db->sql_fetchrow($result);
         $db->sql_freeresult($result);
@@ -109,7 +109,7 @@ class UserManager
 
         global $db;
 
-        $sql = 'UPDATE ' . USERS_TABLE . ' SET ' . $db->sql_build_array('UPDATE', $data) . ' WHERE username_clean = ' . $db->sql_escape($claimsUser->userName) . "'";
+        $sql = 'UPDATE ' . USERS_TABLE . ' SET ' . $db->sql_build_array('UPDATE', $data) . ' WHERE username = ' . $db->sql_escape($claimsUser->userName) . "'";
 
         $result = $db->sql_query($sql);
         $db->sql_freeresult($result);
