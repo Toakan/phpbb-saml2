@@ -1,1 +1,7 @@
-/.idea/
+# eclipse
+.buildpath
+.project
+.settings/
+
+# phpstorm
+.idea/
