@@ -46,28 +46,6 @@ After configuring [SimpleSamlPhP](http://www.simplesamlphp.org), enable the exte
 
 If you for instance use Apache with a vhost setup, do not forget to add the [SimpleSamlPhP](http://www.simplesamlphp.org) SetEnv and Alias, like so:
 
-```apacheconfig
-<VirtualHost *:80>
-  ServerName phpbb3.localhost
-  DocumentRoot /var/www/phpbb3
-  Options Indexes FollowSymLinks
-
-  SetEnv SIMPLESAMLPHP_CONFIG_DIR /var/www/phpbb3/simplesaml/config
-
-  Alias /simplesaml /var/www/phpbb3/simplesaml/www
-
-  <Directory "/var/www/phpbb3/">
-    AllowOverride All
-    <IfVersion < 2.4>
-      Allow from all
-    </IfVersion>
-    <IfVersion >= 2.4>
-      Require all granted
-    </IfVersion>
-  </Directory>
-
-</VirtualHost>
-```
 
 The [SimpleSamlPhP](http://www.simplesamlphp.org) IDP authsources.php can for instance be configured like below for testing:
 
