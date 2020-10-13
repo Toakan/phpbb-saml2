@@ -7,7 +7,7 @@ class GroupManager
     public function getManagedGroups()
     {
         //TODO the list of managed groups should be configurable
-        $groupNames = array('ADMINISTRATORS', 'GLOBAL_MODERATORS', 'MODERATORS', 'REGISTERED', 'NEWLY_REGISTERED', 'Tikit Employees');
+        $groupNames = array('ADMINISTRATORS', 'GLOBAL_MODERATORS', 'MODERATORS', 'REGISTERED', 'NEWLY_REGISTERED');
         $groups = array();
 
         foreach ($groupNames as $groupName)
