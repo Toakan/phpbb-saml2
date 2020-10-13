@@ -20,10 +20,10 @@ class UserManager
      * @return array
      * @throws Exception
      */
-    function lookup(ClaimsUser $claimsUser, $allFields = false)
+    function lookup($attributes, $allFields = false)
     {
-        if (!isset($claimsUser)) {
-            throw new Exception("claimsUser is null");
+        if (!isset($attributes->username[0])) {
+            throw new \Exception("SQL Lookup of User failed.");
         }
 
         global $db;
@@ -33,27 +33,26 @@ class UserManager
         } else {
             $fields = 'user_id, username, user_password, user_passchg, user_email, user_type, user_login_attempts';
         }
-        $sql = 'SELECT ' . $fields . '
+        $sql = 'SELECT top 1 ' . $fields . '
        		FROM ' . USERS_TABLE . "
-       		WHERE username = '" . $db->sql_escape($claimsUser->userName) . "'";
+               WHERE user_email = '" . $db->sql_escape($attributes->email[0]) . "'";
         $result = $db->sql_query($sql);
         $row = $db->sql_fetchrow($result);
         $db->sql_freeresult($result);
-
         return $row;
     }
 
     /**
-     * @param ClaimsUser $claimsUser
+     * @param $attributes 
      */
-    public function create(ClaimsUser $claimsUser)
+    public function create($attributes)
     {
-        if (!isset($claimsUser)) {
-            throw new Exception("claimsUser is null");
+        if (!isset($attributes)) {
+            throw new \Exception("Creation of user failed");
         }
-
+        
         $builder = new UserRowBuilder();
-        $user_row = $builder->build($claimsUser);
+        $user_row = $builder->build($attributes);
 
         // all the information has been compiled, add the user
         // tables affected: users table, profile_fields_data table, groups table, and config table.
@@ -67,49 +66,49 @@ class UserManager
     }
 
     /**
-     * @param ClaimsUser $claimsUser
+     * @param $attributes 
      */
-    public function sync(ClaimsUser $claimsUser)
+    public function sync($attributes)
     {
-        if (!isset($claimsUser)) {
-            throw new Exception("claimsUser is null");
+        if (!isset($attributes)) {
+            throw new \Exception("Syncing User failed.");
         }
     }
 
     /**
-     * @param ClaimsUser $claimsUser
+     * @param $attributes 
      */
-    public function syncGroups(ClaimsUser $claimsUser)
+    public function syncGroups($attributes)
     {
         if (!isset($claimsUser)) {
-            throw new Exception("claimsUser is null");
+            throw new \Exception("Syncing groups failed.");
         }
         //TODO Implement this
     }
 
     /**
-     * @param ClaimsUser $claimsUser
+     * @param $attributes 
      */
-    public function syncProfile(ClaimsUser $claimsUser)
+    public function syncProfile($attributes)
     {
-        if (!isset($claimsUser)) {
-            throw new Exception("claimsUser is null");
+        if (!isset($attributes)) {
+            throw new \Exception("Syncing Profile failed.");
         }
 
         $data = array();
 
-        if (isset($claimsUser->email)) {
-            $item = array('user_email' => $claimsUser->email);
+        if (isset($attributes->email[0])) {
+            $item = array('user_email' => $attributes->email[0]);
             array_push($data, $item);
         }
 
-        array_push($data, array('user_type' => $claimsUser->userType()));
-        array_push($data, array('group_id' => (int)$claimsUser->getDefaultGroupId()));
-        array_push($data, array('user_lang' => $claimsUser->getPreferredLanguage()));
+        array_push($data, array('user_type' => $attributes->userType()));
+        array_push($data, array('group_id' => (int)$attributes->getDefaultGroupId()));
+        array_push($data, array('user_lang' => $attributes->getPreferredLanguage()));
 
         global $db;
 
-        $sql = 'UPDATE ' . USERS_TABLE . ' SET ' . $db->sql_build_array('UPDATE', $data) . ' WHERE username = ' . $db->sql_escape($claimsUser->userName) . "'";
+        $sql = 'UPDATE ' . USERS_TABLE . ' SET ' . $db->sql_build_array('UPDATE', $data) . ' WHERE user_email = ' . $db->sql_escape($attributes->username[0]) . "'";
 
         $result = $db->sql_query($sql);
         $db->sql_freeresult($result);

@@ -7,7 +7,7 @@ class GroupManager
     public function getManagedGroups()
     {
         //TODO the list of managed groups should be configurable
-        $groupNames = array('ADMINISTRATORS', 'GLOBAL_MODERATORS', 'MODERATORS', 'REGISTERED', 'NEWLY_REGISTERED');
+        $groupNames = array('ADMINISTRATORS', 'GLOBAL_MODERATORS', 'MODERATORS', 'REGISTERED', 'NEWLY_REGISTERED', 'Tikit Employees');
         $groups = array();
 
         foreach ($groupNames as $groupName)
@@ -118,7 +118,7 @@ class ManagedGroupFilter implements IGroupFilter
         $filtered = Array();
         foreach ($groups as $group)
         {
-            if ($this->managedGroups->in_array(strtoupper($group))) {
+            if ($group->in_array(strtoupper($this->managedGroups))) {
                 array_push($filtered, strtolower($group));
             }
         }

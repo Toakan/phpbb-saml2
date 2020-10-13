@@ -5,7 +5,6 @@ namespace noud\saml2\auth\provider;
 class ClaimsUser
 {
     private $attributes;
-    private $map;
     private $groups;
 
     private $validUser = true;
@@ -13,29 +12,23 @@ class ClaimsUser
     public $userName;
     public $email;
 
-    function __construct(Array $attributes, ClaimMap $map)
+    function __construct($attributes)
     {
         $this->attributes = $attributes;
-        $this->map = $map;
-
-        $this->setUserName($attributes, $map);
-        $this->trySetEmail($attributes, $map);
-
-        if(isset($this->attributes[$this->map->groupType]))
-        {
-            $this->groups = $this->attributes[$this->map->groupType];
-        }
+        $this->setUserName($attributes);
+        $this->trySetEmail($attributes);
+        $this->is_portal_user($attributes);
     }
 
-    private function setUserName(Array $attributes, ClaimMap $map)
+    private function setUserName($attributes)
     {
-        if (!isset($attributes[$map->userNameType]) || !isset($attributes[$map->userNameType][0])) {
+        if (!isset($attributes->username) || !isset($attributes->username[0])) {
             $this->validUser = false;
         }
 
-        $userName = $attributes[$map->userNameType][0];
+        $userName = $attributes->username[0];
 
-        if(strlen($userName) > 255)
+        if(strlen($userName) > 20)
         {
             $val = strtolower($userName);
             $crc64 = ( '0x' . hash('crc32', $val) . hash('crc32b', $val) );
@@ -43,18 +36,27 @@ class ClaimsUser
         }
         else
         {
-            $this->userName = $userName;
+            $this->username = strtolower($userName);
         }
     }
 
-    private function trySetEmail(Array $attributes, ClaimMap $map)
+    private function trySetEmail($attributes)
     {
-        if (!isset($attributes[$map->emailType]) || !isset($attributes[$map->emailType][0])) {
+        if (!isset($attributes->email) || !isset($attributes->email[0])) {
             $this->email = '';
             return;
         }
-        $email = $attributes[$map->emailType][0];
+        $email = $attributes->email[0];
         $this->email = strtolower($email);
+    }
+
+    private function is_portal_user($attributes){
+        if(!isset($attributes->is_portal_user) || !isset($attributes->is_portal_user[0])){
+            $this->validUser = false;
+            return;
+        }
+
+
     }
 
     public function isFounder()
@@ -121,42 +123,19 @@ class ClaimsUser
         return USER_NORMAL;
     }
 
-
-    /**
-     * @return int the groupId of the user's default group
-     */
-    public function getDefaultGroupId()
-    {
-        if ($this->isAdministrator()) {
-            return 5;
-        }
-
-        if($this->isModerator())
-        {
-            return 4;
-        }
-
-        if ($this->isRegistered()) {
-            return 2;
-        }
-
-        return 2;
-//        return 7; // Return 7 for non-registered users
-    }
-
     public function getPreferredLanguage()
     {
-        // If no preferredLanguage claim is present, we default to Danish
+        // If no preferredLanguage claim is present, we default to English
         if (!isset($this->attributes[$this->map->preferredLanguage])) {
-            return 'da';
+            return 'en';
         }
 
         // Languages supported by the phpBB installation
-        $supportedLanguages = array('da', 'en');
+        $supportedLanguages = array('en');
         $lang = $this->attributes[$this->map->preferredLanguage][0];
 
         if (!isset($lang)) {
-            return 'da';
+            return 'en';
         }
 
         // Comparer the supplied claim value with the list of supported languages
@@ -167,8 +146,8 @@ class ClaimsUser
             }
         }
 
-        // Fallback to Danish, if the preferred language is not supported
-        return 'da';
+        // Fallback to British English, if the preferred language is not supported
+        return 'en';
     }
 
     /**

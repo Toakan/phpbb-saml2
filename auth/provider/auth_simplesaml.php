@@ -2,6 +2,8 @@
 
 namespace noud\saml2\auth\provider;
 
+use Exception;
+
 if (!defined('IN_PHPBB')) {
     exit;
 }
@@ -39,65 +41,66 @@ class auth_simplesaml extends \phpbb\auth\provider\base
         return $this->aLogin(true);
     }
 
-    /**
-     * @param bool $auto
-     * @return array
-     */
+
     public function aLogin($auto = false)
     {
+        try {
+        // Get the SAML Credentials from SimpleSAML
         $as = new \SimpleSAML\Auth\Simple('default-sp');
-        $fact = new ClaimMapFactory();
-        $map = $fact->Create();
         $as->requireAuth();
-        $attributes = $as->getAttributes();
-        // If no username claim is present, the user is not authenticated.
-        //TODO error_msg is localized using common.php. Could be nice to move this to a different file.
-        if (!isset($attributes[$map->userNameType]) || !isset($attributes[$map->userNameType][0])) {
+        $attrib = $as->getAttributes();
+        $attributes = (object) $attrib;
+
+        // Check if they are an authenticated portal user, otherwise log them in anonymously.
+        if (!isset($attributes->is_portal_user) || !isset($attributes->is_portal_user[0])) {
             return array(
                 'status' => LOGIN_ERROR_EXTERNAL_AUTH,
                 'error_msg' => 'LOGIN_ERROR_EXTERNAL_AUTH_SS',
                 'user_row' => array('user_id' => ANONYMOUS),
             );
         }
+        
+        // Setup the PHPBB Auth System to start verification.
         $groupManager = new GroupManager();
         $userManager = new UserManager($groupManager);
-        $claimsUser = new ClaimsUser($attributes, $map);
-        if (!$claimsUser->isValidUser()) {
-            return array(
-                'status' => LOGIN_ERROR_EXTERNAL_AUTH,
-                'error_msg' => 'LOGIN_ERROR_EXTERNAL_AUTH_SS',
-                'user_row' => array('user_id' => ANONYMOUS),
-            );
-        }
-        // User is authenticated. Look up user in database.
-        $row = $userManager->lookup($claimsUser);
-        // User is found. Sync user attributes, get updated row, and login user using updated row.
+        $row = $userManager->lookup($attributes);
+
+        
         if (isset($row) && $row !== false) {
-            $userManager->sync($claimsUser);
-            $row = $userManager->lookup($claimsUser, $auto);
-            if ($auto) {
-                return $row;
-            } else {
-                return $this->get_login_array($row);
-            }
+            // User is found. Sync user attributes, get updated row, and login user using updated row.
+            $userManager->sync($attributes);
+            $row = $userManager->lookup($attributes, $auto);
+        } else {
+            // User not found. Creating user in Forums.
+            $userManager->create($attributes);
+            $row = $userManager->lookup($attributes, $auto);
         }
-        // 4. User was not found, so we need to create a user first.
-        $userManager->create($claimsUser);
-        $row = $userManager->lookup($claimsUser, $auto);
-        //5. If no row is found it's an error.
-        //TODO need to show a more descriptive error. This needs to be logged somewhere.
-        if (!isset($row)) {
+
+
+        if (!isset($row) || $row == false) {
+            // Something messed up along the way, log them in as unauthed Anonymous.
             return array(
                 'status' => LOGIN_ERROR_EXTERNAL_AUTH,
                 'error_msg' => 'LOGIN_ERROR_EXTERNAL_AUTH_SS',
                 'user_row' => array('user_id' => ANONYMOUS),
             );
         }
+
         if ($auto) {
             return $row;
         } else {
             return $this->get_login_array($row);
         }
+
+
+        } catch (Exception $e) {
+            throw new \phpbb\exception\http_exception(403,'SAML_MAP_CREATION_FAILED',array(
+                'status' => LOGIN_ERROR_EXTERNAL_AUTH,
+                'error_msg' => 'LOGIN_ERROR_EXTERNAL_AUTH_SS',
+                'user_row' => array('user_id' => ANONYMOUS)
+            ));
+        }
+
     }
 
 	public function logout($data, $new_session)
@@ -106,23 +109,10 @@ class auth_simplesaml extends \phpbb\auth\provider\base
         $as->logout("/");
     }
 
-    public function validate_session($user_row)
-    {
-        $as = new \SimpleSAML\Auth\Simple('default-sp');
-        if($as->isAuthenticated()) {
-            return true;
-        } else {
-            global $user;
-            $user->session_kill();
-            $user->session_begin();
-            return false;
-        }
-    }
-
     function get_login_array(array $row)
     {
         if (!isset($row)) {
-            throw new Exception("Row is null");
+            throw new \Exception("Row is null");
         }
         return array(
             'status' => LOGIN_SUCCESS,
