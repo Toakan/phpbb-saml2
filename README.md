@@ -89,7 +89,7 @@ The [SimpleSamlPhP](http://www.simplesamlphp.org) IDP authsources.php can for in
 
 I've made multiple changes from the original version that noud provided, namely that the `$attributes` are now ARRAY elements passed back by SimpleSAML directly. Throughout the entire Project, we now look at this object to determine the status of AUTH, and use it to pass parameters to PHPBB. 
 
-I strongly recommend building a test page first, to dump the SAML array returned from your provider as the object will likely be identifed in a different manner. The default configuration of this project uses the following four fields which is compatible with SalesForce. (Limited testing so far)
+I strongly recommend using the test page first, to dump the SAML array returned from your provider as the objects will likely be identifed in a different manner. The default configuration of this project uses the following four fields which is compatible with SalesForce. (Limited testing so far)
 
 - user_ID
 - username
