@@ -17,14 +17,9 @@ This module is merely the plumbing between [SimpleSamlPhP](http://www.simplesaml
 
 [SimpleSamlPhP](http://www.simplesamlphp.org) is a very mature framework that is successfully used in large production environments with thousands of simultaneous users, and multiple logins (issued tokens) per second. It does require some knowledge about things like certificates, SSL, and SAML2 federation to configure it, but their website provides a great starting point for howtos.
 
-I highly recommend that a basic [SimpleSamlPhP](http://www.simplesamlphp.org) is successfully tested with the identity provider before the module is enabled in phpBB. Different identity providers have different default settings, and it can take some tweaking of configurations for [SimpleSamlPhP](http://www.simplesamlphp.org) to make it work.
-
-I have successfully tested with module with several different identity providers including [SimpleSamlPhP](http://www.simplesamlphp.org) itself, [Safewhere*Identify](http://safewhere.com/), and Microsoft AD FS2.0.
-
 ##### Installation
 
-You have to put the [SimpleSamlPhP](http://www.simplesamlphp.org) in your [phpBB](http://www.phpBB.com) directory.
-And this module in the [phpBB](http://www.phpBB.com) directory. Like so:
+This Extension requires [SimpleSamlPhP](http://www.simplesamlphp.org) in your root [phpBB](http://www.phpBB.com) directory. The extension can then be installed like a normal module, like so.
 
 ```
 phpbb3
@@ -42,33 +37,28 @@ phpbb3
         config
         etc..
 ```
-After configuring [SimpleSamlPhP](http://www.simplesamlphp.org), enable the extension and choise authentication method SAML2. And after this delete your [phpBB](http://www.phpBB.com) cache.
 
-If you for instance use Apache with a vhost setup, do not forget to add the [SimpleSamlPhP](http://www.simplesamlphp.org) SetEnv and Alias, like so:
+After configuring [SimpleSamlPhP](http://www.simplesamlphp.org), enable the extension and choose the authentication method `noud.SAML2`. And after this delete your [phpBB](http://www.phpBB.com) cache.
 
-```apacheconfig
-<VirtualHost *:80>
-  ServerName phpbb3.localhost
-  DocumentRoot /var/www/phpbb3
-  Options Indexes FollowSymLinks
+If you are using Apache with a vhost setup, do not forget to add the [SimpleSamlPhP](http://www.simplesamlphp.org) SetEnv and Alias options. Check the wiki for this information [here](https://github.com/Toakan/phpbb-saml2/wiki/Apache-Configuration)
 
-  SetEnv SIMPLESAMLPHP_CONFIG_DIR /var/www/phpbb3/simplesaml/config
+##### Using this Extension.
 
-  Alias /simplesaml /var/www/phpbb3/simplesaml/www
+This Repo has made multiple changes from the original version that @noud provided, namely that the `$attributes` are now ARRAY elements passed back by SimpleSAML directly. Throughout the entire Project, we now look at this object to determine the status of AUTH, and use it to pass parameters to PHPBB. 
 
-  <Directory "/var/www/phpbb3/">
-    AllowOverride All
-    <IfVersion < 2.4>
-      Allow from all
-    </IfVersion>
-    <IfVersion >= 2.4>
-      Require all granted
-    </IfVersion>
-  </Directory>
+I strongly recommend using the test page first, provided by SimpleSAML, to dump the SAML array returned from your provider as the object Attributes will likely be identifed in a different manner. The default configuration of this project uses the following four fields which is compatible with SalesForce. (Limited testing so far)
 
-</VirtualHost>
-```
+- user_ID
+- username
+- email
+- is_portal_user
 
+It will no longer overwrite existing PHPBB installations, meaning you can use this as a drop in extension to an existing forum solution as long as your SAML authority utilises email as the authentication method.
+
+Auto creation of users will work, so long as they are registered users in the first place, and it will place them into the "Registered Users" group
+
+
+#### Further configuration.
 The [SimpleSamlPhP](http://www.simplesamlphp.org) IDP authsources.php can for instance be configured like below for testing:
 
 ```
@@ -85,26 +75,8 @@ The [SimpleSamlPhP](http://www.simplesamlphp.org) IDP authsources.php can for in
     ),
 ```
 
-##### Using this Extension.
-
-I've made multiple changes from the original version that noud provided, namely that the `$attributes` are now ARRAY elements passed back by SimpleSAML directly. Throughout the entire Project, we now look at this object to determine the status of AUTH, and use it to pass parameters to PHPBB. 
-
-I strongly recommend using the test page first, to dump the SAML array returned from your provider as the objects will likely be identifed in a different manner. The default configuration of this project uses the following four fields which is compatible with SalesForce. (Limited testing so far)
-
-- user_ID
-- username
-- email
-- is_portal_user
-
-It will no longer overwrite existing PHPBB installations, meaning you can use this as a drop in extension to an existing forum solution as long as your SAML authority utilises email as the authentication method.
-
-Auto creation of users will work, so long as they are registered users in the first place, and it will place them into the "Registered Users" group
-
 ##### Source
 
 This extension can be fetched from [https://github.com/toakan/phpbb-saml2](https://github.com/toakan/phpbb-saml2).
 
 The original is available from [https://github.com/noud/phpbb-saml2](https://github.com/noud/phpbb-saml2).
-
-
-
