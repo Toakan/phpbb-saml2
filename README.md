@@ -53,9 +53,11 @@ I strongly recommend using the test page first, provided by SimpleSAML, to dump 
 - email
 - is_portal_user
 
-It will no longer overwrite existing PHPBB installations, meaning you can use this as a drop in extension to an existing forum solution as long as your SAML authority utilises email as the authentication method.
+These are the default provided by SalesForce. [You can enable more by following these steps.](https://developer.salesforce.com/forums/?id=906F00000008qxvIAA)
 
-Auto creation of users will work, so long as they are registered users in the first place, and it will place them into the "Registered Users" group
+- It will no longer overwrite existing PHPBB installations, meaning you can use this as a drop in extension to an existing forum solution as long as your SAML authority utilises email as the authentication method.
+
+- Auto creation of users will work, so long as they are registered users in the first place, and it will place them into the "Registered Users" group
 
 
 #### Further configuration.
